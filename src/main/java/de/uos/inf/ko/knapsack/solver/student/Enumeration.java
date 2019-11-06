@@ -16,7 +16,7 @@ public class Enumeration implements SolverInterface<Solution> {
    * and apply each to a knapsack instance;
    * pick the optimal solution such that:
    * sum(weight_i) <= W for all i=1,...,n
-   * and value is max
+   * and max value
    * @param instance The given knapsack instance
    * @return optimal solution
    */
@@ -45,8 +45,8 @@ public class Enumeration implements SolverInterface<Solution> {
       }
     }
 
-    //print weight and value of optimal solution
-    System.out.println("W=" + optimal.getWeight() + "|" + "P=" + optimal.getValue() + "\n");
+    //print weight and value of valid solution
+    System.out.println("Weight=" + solution.getWeight() + "|" + "Value=" + solution.getValue());
 
     return optimal;
   }
@@ -73,7 +73,7 @@ public class Enumeration implements SolverInterface<Solution> {
   }
 
   /**
-   * for test purpose, please ignore
+   * for test purpose; please ignore
    * @param w
    * @param v
    * @param n
