@@ -8,7 +8,8 @@ import java.util.ArrayList;
 
 public class ResultsTest {
 
-  public final static String KNAPSACK_INSTANCES_PATH = "./resources/knapsack/";
+  public final static String KNAPSACK_INSTANCES_PATH = "C:\\Users\\Public\\Joschi\\test\\resources\\knapsack\\";
+  //public final static String KNAPSACK_INSTANCES_PATH = "./resources/knapsack/";
 
   /**
    * Prints all results n a table.
@@ -130,6 +131,7 @@ public class ResultsTest {
       for (int j = 1; j <= instances[i][SECD_ENTRY]; j++) {
         final String filename = "rucksack" + String.format("%05d", instances[i][FRST_ENTRY]) + "-" + j + ".txt";
         final Instance instance = Reader.readInstance(KNAPSACK_INSTANCES_PATH + filename);
+        //final Instance instance = Reader.readInstance("C:\\Users\\Public\\Joschi\\test\\" + "aufgabe1" + ".txt");
         instance.setFilename(filename);
         System.out.println("# Instance file: " + filename);
         System.out.println("# Number of items: " + instance.getSize());

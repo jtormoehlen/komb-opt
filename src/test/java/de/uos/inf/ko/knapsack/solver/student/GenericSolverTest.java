@@ -11,7 +11,9 @@ import de.uos.inf.ko.knapsack.reader.Reader;
 
 public abstract class GenericSolverTest<SolutionType extends GenericSolution> {
 
-  public final static String KNAPSACK_INSTANCES_PATH = "./resources/knapsack/";
+  //public final static String KNAPSACK_INSTANCES_PATH = "./resources/knapsack/";
+  public final static String KNAPSACK_INSTANCES_PATH = "C:\\Users\\Public\\Joschi\\test\\resources\\knapsack\\";
+
 
   protected GenericSolverTest(SolverInterface<SolutionType> solver) {
     this.solver = solver;
@@ -36,6 +38,7 @@ public abstract class GenericSolverTest<SolutionType extends GenericSolution> {
 
     for (int i = 0; i <= 2; i++) {
       final Instance instance = Reader.readInstance(KNAPSACK_INSTANCES_PATH + "tiny-rucksack-" + i + ".txt");
+      //final Instance instance = Reader.readInstance("C:\\Users\\Public\\Joschi\\test\\" + "aufgabe1" + ".txt");
       final SolutionType solution = solver.solve(instance);
       assertTrue(solution.isFeasible());
     }
