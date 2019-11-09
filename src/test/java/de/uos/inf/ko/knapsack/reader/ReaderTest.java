@@ -11,7 +11,8 @@ public class ReaderTest {
   @Test
   public void test() {
     try {
-      Instance instance = Reader.readInstance("./resources/knapsack/tiny-rucksack-0.txt");
+      Instance instance = Reader.readInstance("C:\\Users\\Johannes\\Dropbox\\KombOpt\\Rucksack\\resources\\knapsack\\tiny-rucksack-0.txt");
+
       assertEquals(10, instance.getCapacity());
       assertEquals(3, instance.getSize());
 

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class ResultsTest {
 
-  public final static String KNAPSACK_INSTANCES_PATH = "C:\\Users\\Public\\Joschi\\test\\resources\\knapsack\\";
+  public final static String KNAPSACK_INSTANCES_PATH = "C:\\Users\\Johannes\\Dropbox\\KombOpt\\Rucksack\\resources\\knapsack\\";
   //public final static String KNAPSACK_INSTANCES_PATH = "./resources/knapsack/";
 
   /**

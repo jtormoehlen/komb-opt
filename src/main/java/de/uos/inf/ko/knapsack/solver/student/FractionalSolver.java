@@ -21,7 +21,8 @@ public class FractionalSolver implements SolverInterface<FractionalSolution> {
     FractionalSolution fractionalSolution = new FractionalSolution(instance);
 
     for (int i = 0; i < instance.getSize(); i++) {
-      itemList.add(new Item(i, instance.getWeight(i) / instance.getValue(i)));
+      double ratio = (instance.getWeight(i) / (double)instance.getValue(i));
+      itemList.add(new Item(i, ratio));
     }
 
     Collections.sort(itemList);
@@ -30,11 +31,11 @@ public class FractionalSolver implements SolverInterface<FractionalSolution> {
     int j = 0;
 
     while (listSumTo(itemList, j, instance) <= instance.getCapacity()) {
-      x[j] = 1;
+      x[j] = 1.0d;
       j++;
     }
 
-    x[j] = (instance.getCapacity() - listSumTo(itemList, j - 1, instance)) / (instance.getWeight(j));
+    x[j] = ((double)instance.getCapacity() - listSumTo(itemList, j - 1, instance)) / (double)(instance.getWeight(j));
 
     for (int i = 0; i < x.length; i++) {
       fractionalSolution.set(itemList.get(i).item, x[i]);
@@ -48,6 +49,16 @@ public class FractionalSolver implements SolverInterface<FractionalSolution> {
 
     for (int i = 0; i <= to; i++) {
       result += instance.getWeight(itemList.get(i).item);
+    }
+
+    return result;
+  }
+
+  private static String printList(List<Item> list) {
+    String result = "";
+
+    for (int i = 0; i < list.size(); i++) {
+      result += list.get(i).item + "|" + list.get(i).ratio + "\n";
     }
 
     return result;

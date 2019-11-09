@@ -12,7 +12,7 @@ import de.uos.inf.ko.knapsack.reader.Reader;
 public abstract class GenericSolverTest<SolutionType extends GenericSolution> {
 
   //public final static String KNAPSACK_INSTANCES_PATH = "./resources/knapsack/";
-  public final static String KNAPSACK_INSTANCES_PATH = "C:\\Users\\Public\\Joschi\\test\\resources\\knapsack\\";
+  public final static String KNAPSACK_INSTANCES_PATH = "C:\\Users\\Johannes\\Dropbox\\KombOpt\\Rucksack\\resources\\knapsack\\";
 
 
   protected GenericSolverTest(SolverInterface<SolutionType> solver) {
