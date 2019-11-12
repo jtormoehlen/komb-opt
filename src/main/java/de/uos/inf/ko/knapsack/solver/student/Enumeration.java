@@ -46,7 +46,7 @@ public class Enumeration implements SolverInterface<Solution> {
     }
 
     //print weight and value of valid solution
-    System.out.println("Weight=" + solution.getWeight() + "|" + "Value=" + solution.getValue());
+    //System.out.println("Weight=" + solution.getWeight() + "|" + "Value=" + solution.getValue());
 
     return optimal;
   }

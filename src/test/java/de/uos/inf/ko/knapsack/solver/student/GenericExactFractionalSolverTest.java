@@ -22,7 +22,6 @@ public abstract class GenericExactFractionalSolverTest<SolutionType extends Gene
     double[] optValues = new double[] {6.333333333333333, 12.0, 157.71428571428572};
     for (int i = 0; i <= 2; i++) {
       final Instance instance = Reader.readInstance(KNAPSACK_INSTANCES_PATH + "tiny-rucksack-" + i + ".txt");
-      //final Instance instance = Reader.readInstance("C:\\Users\\Public\\Joschi\\test\\" + "aufgabe1" + ".txt");
       final SolutionType solution = solver.solve(instance);
       System.out.println(solution.getValue());
       assertEquals(optValues[i], solution.getValue().doubleValue(), 0.00001);
