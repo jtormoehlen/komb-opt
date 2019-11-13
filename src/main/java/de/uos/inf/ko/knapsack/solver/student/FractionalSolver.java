@@ -20,33 +20,43 @@ public class FractionalSolver implements SolverInterface<FractionalSolution> {
         List<Item> itemList = new ArrayList<>();
         FractionalSolution fractionalSolution = new FractionalSolution(instance);
 
+        /** store every object as item with identifier and ratio in the list **/
         for (int i = 0; i < instance.getSize(); i++) {
             double ratio = (instance.getWeight(i) / (double) instance.getValue(i));
             itemList.add(new Item(i, ratio));
         }
 
+        /** sort the list by ratio starting with lowest **/
         Collections.sort(itemList);
-        //System.out.println(printList(itemList));
 
+        /** initialize solution vector and index **/
         double[] x = new double[instance.getSize()];
         int j = 0;
 
+        /** as long as capacity not reached bind another item **/
         while (listSumTo(itemList, j, instance) <= instance.getCapacity()) {
             x[j] = 1.0d;
             j++;
         }
 
+        /** fractional part of solution => solution is optimal **/
         x[j] = ((double) instance.getCapacity() - listSumTo(itemList, j - 1, instance)) / (double) (instance.getWeight(itemList.get(j).item));
 
+        /** bind solution vector to FractionalSolution Object **/
         for (int i = 0; i < x.length; i++) {
             fractionalSolution.set(itemList.get(i).item, x[i]);
         }
 
-        //System.out.println(listToString(itemList, instance));
-
         return fractionalSolution;
     }
 
+    /**
+     * weight sum of all items in the list
+     * @param itemList items
+     * @param to upper limit of the sum
+     * @param instance initial instance
+     * @return result as integer
+     */
     private static int listSumTo(List<Item> itemList, int to, Instance instance) {
         int result = 0;
 
@@ -57,6 +67,12 @@ public class FractionalSolver implements SolverInterface<FractionalSolution> {
         return result;
     }
 
+    /**
+     * appends some item information to a string
+     * @param list contain items
+     * @param instance initial instance
+     * @return string as result
+     */
     private static String listToString(List<Item> list, Instance instance) {
         String result = "";
 
@@ -72,6 +88,9 @@ public class FractionalSolver implements SolverInterface<FractionalSolution> {
         return "Fractional(s)";
     }
 
+    /**
+     * Item with identifier and ratio of w_i/c_i
+     */
     private class Item implements Comparable<Item> {
         double ratio;
         int item;

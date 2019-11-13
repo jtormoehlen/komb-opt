@@ -20,21 +20,26 @@ public class GreedyHeuristic implements SolverInterface<Solution> {
         List<Item> itemList = new ArrayList<>();
         Solution solution = new Solution(instance);
 
+        /** store every object as item with identifier and ratio in the list **/
         for (int i = 0; i < instance.getSize(); i++) {
             double ratio = (instance.getWeight(i) / (double) instance.getValue(i));
             itemList.add(new Item(i, ratio));
         }
 
+        /** sort the list by ratio starting with lowest **/
         Collections.sort(itemList);
 
+        /** initialize solution vector and index **/
         int[] x = new int[instance.getSize()];
         int j = 0;
 
+        /** as long as capacity not reached bind another item **/
         while (listSumTo(itemList, j, instance) <= instance.getCapacity()) {
             x[j] = 1;
             j++;
         }
 
+        /** check if capacity allows any other objects with worse ratio **/
         while (j != instance.getSize()) {
             if ((instance.getCapacity() - listSumTo(itemList, j, instance)) >= instance.getWeight(itemList.get(j).item)) {
                 x[j] = 1;
@@ -43,6 +48,7 @@ public class GreedyHeuristic implements SolverInterface<Solution> {
             j++;
         }
 
+        /** bind solution vector to FractionalSolution Object **/
         for (int i = 0; i < x.length; i++) {
             solution.set(itemList.get(i).item, x[i]);
         }
@@ -50,6 +56,13 @@ public class GreedyHeuristic implements SolverInterface<Solution> {
         return solution;
     }
 
+    /**
+     * weight sum of all items in the list
+     * @param itemList items
+     * @param to upper limit of the sum
+     * @param instance initial instance
+     * @return result as integer
+     */
     private static int listSumTo(List<Item> itemList, int to, Instance instance) {
         int result = 0;
 
@@ -65,6 +78,9 @@ public class GreedyHeuristic implements SolverInterface<Solution> {
         return "Greedy(s)";
     }
 
+    /**
+     * Item with identifier and ratio of w_i/c_i
+     */
     private class Item implements Comparable<Item> {
         double ratio;
         int item;
