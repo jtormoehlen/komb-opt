@@ -23,7 +23,6 @@ public abstract class GenericExactSolverTest<SolutionType extends GenericSolutio
     for (int i = 0; i <= 2; i++) {
       final Instance instance = Reader.readInstance(KNAPSACK_INSTANCES_PATH + "tiny-rucksack-" + i + ".txt");
 
-      //final Instance instance = Reader.readInstance("C:\\Users\\Public\\Joschi\\test\\" + "aufgabe1" + ".txt");
       final SolutionType solution = solver.solve(instance);
       assertEquals(optValues[i], solution.getValue().intValue());
     }

@@ -25,30 +25,41 @@ public class BranchAndBound implements SolverInterface<Solution> {
     capacity = instance.getCapacity();
     int n = instance.getSize();
 
+    /** initialize list of items from instance **/
     for (int i = 0; i < n; i++) {
       items.add(new Item(i, instance.getWeight(i), instance.getValue(i)));
     }
 
+    /** sort items by ratio **/
     Collections.sort(items);
 
+    /** initialize root and best node and compute upperBound of root node **/
     Node best = new Node();
     Node root = new Node();
     root.computeBound();
 
+    /** strategy: breadth-first-search iterative **/
     Queue<Node> q = new PriorityQueue<>();
+    /** start with root/most valuable item **/
     q.offer(root);
 
+    /** visit every "interesting" node **/
     while (!q.isEmpty()) {
+      /** poll next node **/
       Node node = q.poll();
 
+      /** check for more profit and max level not reached **/
       if (node.bound > best.value && node.h < items.size() - 1) {
 
+        /** build with from parent node and add item weight from next level node **/
         Node with = new Node(node);
         Item item = items.get(node.h);
         with.weight += item.weight;
 
+        /** check if any capacity in knapsack left **/
         if (with.weight <= instance.getCapacity()) {
 
+          /** update with node and compute upperBound **/
           with.taken.add(items.get(node.h));
           with.value += item.value;
           with.computeBound();
@@ -56,22 +67,24 @@ public class BranchAndBound implements SolverInterface<Solution> {
           if (with.value > best.value) {
             best = with;
           }
+          /** put with in queue for further investigation **/
           if (with.bound > best.value) {
             q.offer(with);
           }
         }
 
+        /** initialize without node and compute upperBound **/
         Node without = new Node(node);
         without.computeBound();
 
+        /** put without in queue for further investigation **/
         if (without.bound > best.value) {
           q.offer(without);
         }
       }
     }
 
-    //System.out.println(items);
-
+    /** put best result in solution **/
     for (int i = 0; i < best.taken.size(); i++) {
       solution.set(best.taken.get(i).label, 1);
     }
@@ -84,6 +97,9 @@ public class BranchAndBound implements SolverInterface<Solution> {
     return "BB(s)";
   }
 
+  /**
+   * Node with level h, list of taken items, upperBound and value/weight of current node
+   */
   private class Node implements Comparable<Node> {
 
     int h;
@@ -106,6 +122,9 @@ public class BranchAndBound implements SolverInterface<Solution> {
       return (int) (other.bound - bound);
     }
 
+    /**
+     * compute upper Bound
+     */
     public void computeBound() {
       int i = h;
       double w = weight;
@@ -122,6 +141,9 @@ public class BranchAndBound implements SolverInterface<Solution> {
     }
   }
 
+  /**
+   * Item with label, weight, value and ratio=value/weight
+   */
   private class Item implements Comparable<Item> {
     int label, weight, value;
     double ratio;
