@@ -39,7 +39,7 @@ public class ConstraintProgrammingDirect implements SolverInterface<Solution> {
 
     // 5. put variable values in solution
     List<org.chocosolver.solver.Solution> solutions = s.findAllSolutions();
-    ConstraintProgramming.printSolutions(solutions, x);
+    //ConstraintProgramming.printSolutions(solutions, x);
 
     // 5. put variable values in solution
     int maxP = 0;
