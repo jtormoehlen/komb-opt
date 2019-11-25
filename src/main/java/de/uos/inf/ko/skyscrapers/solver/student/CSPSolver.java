@@ -4,6 +4,8 @@ import de.uos.inf.ko.skyscrapers.Instance;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.Solver;
+import org.chocosolver.solver.constraints.Constraint;
+import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.IntVar;
 
 import java.util.ArrayList;
@@ -12,7 +14,7 @@ import java.util.List;
 /**
  * A skyscrapers solver.
  *
- * @author
+ * @author jtormoehlen
  */
 public class CSPSolver {
   public static Instance solve(Instance instance) {
@@ -26,17 +28,16 @@ public class CSPSolver {
     // 1. create model
     Model m = new Model("skyscrapers " + n);
 
-    // 2. create varaibles
-    IntVar x[][] = m.intVarMatrix("x", n, n, 1, n);
+    // 2. create variables
+    IntVar[][] x = m.intVarMatrix("x", n, n, 1, n);
 //    IntVar vN[][] = m.boolVarMatrix("vN", n, n);
 //    IntVar vO[][] = m.boolVarMatrix("vO", n, n);
 //    IntVar vS[][] = m.boolVarMatrix("vS", n, n);
-    IntVar vW[][] = m.boolVarMatrix("vW", n, n);
+    BoolVar[][] vW = m.boolVarMatrix("vW", n, n);
     IntVar[] lines = m.intVarArray("lines", n, 1, n);
 
 
     // 3. add constraints
-    int tmp = 0;
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < n - 1; j++) {
         for (int k = 0; k < n; k++) {
@@ -49,21 +50,31 @@ public class CSPSolver {
         if (instance.getGamefield()[i][j] > 0) {
           m.arithm(x[i][j],"=", instance.getGamefield()[i][j]).post();
         }
-
-        m.sum(vW[i], "=", lines[i]).post();
       }
     }
 
     for (int i = 0; i < n; i++) {
-      m.arithm(lines[i], "=", instance.getWest()[i]).post();
-      m.arithm(vW[i][1], "=", 1).post();
+      m.sum(vW[i], "=", instance.getWest()[i]).post();
+      m.arithm(vW[i][0], "=", 1).post();
+    }
+
+    for (int i = 0; i < n; i++) {
+      for (int j = 1; j < n; j++) {
+        Constraint[] constraints = new Constraint[j];
+
+        for (int h = 0; h < j; h++) {
+          constraints[h] = m.arithm(x[i][h], "<", x[i][j]);
+        }
+
+        m.ifOnlyIf(m.arithm(vW[i][j], "=", 1), m.and(constraints));
+      }
     }
 
     // 4. get solver and solve model
     Solver s = m.getSolver();
     List<Solution> solutions = new ArrayList<>();
     solutions.add(s.findSolution());
-    System.out.println(m.getVar(lines[0].getValue()) + "$");
+    printVarMat(vW, solutions.get(0));
 
     // 5. print solutions
     int size = instance.getGamefieldSize();
@@ -86,5 +97,19 @@ public class CSPSolver {
     }
 
     return instance;
+  }
+
+  private static void printVarMat(IntVar[][] varMat, Solution s) {
+    String res = "";
+
+    for (int i = 0; i < varMat.length; i++) {
+      for (int j = 0; j < varMat.length; j++) {
+        res += s.getIntVal(varMat[i][j]) + " $ ";
+      }
+
+      res += "\n";
+    }
+
+    System.out.println(res);
   }
 }
