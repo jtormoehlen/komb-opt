@@ -26,7 +26,7 @@ public class SkyscrapersSolverTest {
 
   @Test
   public void testFeasiblity() {
-    final Instance instance = Reader.readSkyscInstance(SKYSCRAPERS_INSTANCES_PATH + "skyscrapers_6x6_easy_001.sav");
+    final Instance instance = Reader.readSkyscInstance(SKYSCRAPERS_INSTANCES_PATH + "skyscrapers_5x5_hard_001.sav");
     CSPSolver.solve(instance);
     feasiblity(instance);
   }

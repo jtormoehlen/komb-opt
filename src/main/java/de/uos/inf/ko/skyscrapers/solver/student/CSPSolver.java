@@ -55,10 +55,22 @@ public class CSPSolver {
     }
 
     for (int i = 0; i < n; i++) {
-      m.sum(vW[i], "=", instance.getWest()[i]).post();
-      m.sum(vE[i], "=", instance.getEast()[i]).post();
-      m.sum(vN[i], "=", instance.getNorth()[i]).post();
-      m.sum(vS[i], "=", instance.getSouth()[i]).post();
+      if (instance.getWest()[i] > 0) {
+        m.sum(vW[i], "=", instance.getWest()[i]).post();
+      }
+
+      if (instance.getEast()[i] > 0) {
+        m.sum(vE[i], "=", instance.getEast()[i]).post();
+      }
+
+      if (instance.getNorth()[i] > 0) {
+        m.sum(vN[i], "=", instance.getNorth()[i]).post();
+      }
+
+      if (instance.getSouth()[i] > 0) {
+        m.sum(vS[i], "=", instance.getSouth()[i]).post();
+      }
+
       m.arithm(vW[i][0], "=", 1).post();
       m.arithm(vE[i][n - 1], "=", 1).post();
       m.arithm(vN[i][0], "=", 1).post();
@@ -97,6 +109,7 @@ public class CSPSolver {
 
     // 4. get solver and solve model
     Solver s = m.getSolver();
+    //List<Solution> solutions = s.findAllSolutions();
     List<Solution> solutions = new ArrayList<>();
     solutions.add(s.findSolution());
 
