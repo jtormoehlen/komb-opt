@@ -8,7 +8,6 @@ import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.IntVar;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,49 +27,60 @@ public class CSPSolver {
     Model m = new Model("skyscrapers " + n);
 
     // 2. create variables
+    /** gamefield matrix **/
     IntVar[][] x = m.intVarMatrix("x", n, n, 1, n);
+    /** gamefield matrix transposed x^T **/
     IntVar[][] xT = m.intVarMatrix("xT", n, n, 1, n);
+    /** "sight" variables for each field x(i,j) and direction **/
     BoolVar[][] vN = m.boolVarMatrix("vN", n, n);
     BoolVar[][] vE = m.boolVarMatrix("vE", n, n);
     BoolVar[][] vS = m.boolVarMatrix("vS", n, n);
     BoolVar[][] vW = m.boolVarMatrix("vW", n, n);
-
 
     // 3. add constraints
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < n - 1; j++) {
         for (int k = 0; k < n; k++) {
           if (j != k) {
+            /** every number x(i,j) in one line is unique **/
             m.arithm(x[i][j], "!=", x[i][k]).post();
+            /** ..and in adjacent column **/
             m.arithm(x[j][i], "!=", x[k][i]).post();
           }
         }
 
         if (instance.getGamefield()[i][j] > 0) {
+          /** bind fixated numbers f(i,j) **/
           m.arithm(x[i][j],"=", instance.getGamefield()[i][j]).post();
         }
 
+        /** x^T is transposed matrix of x **/
         m.arithm(xT[j][i], "=", x[i][j]).post();
       }
     }
 
     for (int i = 0; i < n; i++) {
+      /** sum of skyscrapers "in sight" from west to east equals a_W(i) with line i  **/
       if (instance.getWest()[i] > 0) {
         m.sum(vW[i], "=", instance.getWest()[i]).post();
       }
 
+      /** ...east to west equals a_E(i) with line i  **/
       if (instance.getEast()[i] > 0) {
         m.sum(vE[i], "=", instance.getEast()[i]).post();
       }
 
+      /** ...north to south equals a_N(j) with column j  **/
       if (instance.getNorth()[i] > 0) {
         m.sum(vN[i], "=", instance.getNorth()[i]).post();
       }
 
+      /** ...south to north equals a_S(j) with column j  **/
       if (instance.getSouth()[i] > 0) {
         m.sum(vS[i], "=", instance.getSouth()[i]).post();
       }
 
+      /** skyscrapers on the edge of the field always visible **/
       m.arithm(vW[i][0], "=", 1).post();
       m.arithm(vE[i][n - 1], "=", 1).post();
       m.arithm(vN[i][0], "=", 1).post();
@@ -83,10 +93,13 @@ public class CSPSolver {
         Constraint[] northConstraints = new Constraint[j];
 
         for (int h = 0; h < j; h++) {
+          /** skyscraper  in direction v before x(i,j) must be smaller **/
           westConstraints[h] = m.arithm(x[i][h], "<", x[i][j]);
+          /** from west to east view is transposed from north to south view and vise versa **/
           northConstraints[h] = m.arithm(xT[i][h], "<", xT[i][j]);
         }
 
+        /** all skyscrapers  in direction v before x(i,j) must be smaller **/
         m.ifOnlyIf(m.arithm(vW[i][j], "=", 1), m.and(westConstraints));
         m.ifOnlyIf(m.arithm(vN[i][j], "=", 1), m.and(northConstraints));
       }
@@ -98,10 +111,13 @@ public class CSPSolver {
         Constraint[] southConstraints = new Constraint[n - (j + 1)];
 
         for (int h = j + 1; h < n; h++) {
+          /** skyscraper  in direction v before x(i,j) must be smaller **/
           eastConstraints[h - (j + 1)] = m.arithm(x[i][h], "<", x[i][j]);
+          /** from east to west view is transposed from south to north view and vise versa **/
           southConstraints[h - (j + 1)] = m.arithm(xT[i][h], "<", xT[i][j]);
         }
 
+        /** all skyscrapers  in direction v before x(i,j) must be smaller **/
         m.ifOnlyIf(m.arithm(vE[i][j], "=", 1), m.and(eastConstraints));
         m.ifOnlyIf(m.arithm(vS[i][j], "=", 1), m.and(southConstraints));
       }
@@ -109,9 +125,7 @@ public class CSPSolver {
 
     // 4. get solver and solve model
     Solver s = m.getSolver();
-    //List<Solution> solutions = s.findAllSolutions();
-    List<Solution> solutions = new ArrayList<>();
-    solutions.add(s.findSolution());
+    List<Solution> solutions = s.findAllSolutions();
 
     // 5. print solutions
     int size = instance.getGamefieldSize();
@@ -136,6 +150,10 @@ public class CSPSolver {
     return instance;
   }
 
+  /**
+   * for test purpose
+   * @param array of constraints
+   */
   private static void checkArray(Constraint[] array) {
     String res = "";
 
@@ -166,6 +184,11 @@ public class CSPSolver {
     return array;
   }
 
+  /**
+   * for test purpose
+   * @param varMat gamefield
+   * @param s solution as string
+   */
   private static void printVarMat(IntVar[][] varMat, Solution s) {
     String res = "";
 
