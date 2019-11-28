@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class CSPSolver {
   public static Instance solve(Instance instance) {
-    if (false) {
+    if (true) {
       throw new UnsupportedOperationException();
     }
 
