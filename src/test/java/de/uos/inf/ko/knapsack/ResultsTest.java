@@ -136,7 +136,20 @@ public class ResultsTest {
         System.out.println("# Capacity of knapsack: " + instance.getCapacity());
 
         if (instance.getSize() <= 20) {
-          runSolver(new Enumeration(), instance, valueMatrix);
+          //runSolver(new Enumeration(), instance, valueMatrix);
+          //runSolver(new ConstraintProgramming(), instance, valueMatrix);
+          //runSolver(new ConstraintProgrammingDirect(), instance, valueMatrix);
+        }
+
+        if (instance.getSize() <= 40) {
+          //runSolver(new BranchAndBound(), instance, valueMatrix);
+        }
+
+        if (instance.getSize() <= 100) {
+          //runSolver(new FractionalSolver(), instance, valueMatrix);
+          //runSolver(new GreedyHeuristic(), instance, valueMatrix);
+          runSolver(new BranchAndBound(), instance, valueMatrix);
+          runSolver(new SimulatedAnnealing(), instance, valueMatrix);
         }
       }
     }

@@ -14,84 +14,84 @@ import java.util.Random;
  */
 public class SimulatedAnnealing implements SolverInterface<Solution> {
 
-  @Override
-  public Solution solve(Instance instance) {
+    @Override
+    public Solution solve(Instance instance) {
 //    GreedyHeuristic greedyHeuristic = new GreedyHeuristic();
 //    Solution greedySolution = greedyHeuristic.solve(instance);
 
-    int n = instance.getSize();
+        int n = instance.getSize();
 
-    int t_0 = 100;
-    int c_max = 200000;
-    double alpha = .599d;
+        //works fine: t_0=100   c_max=200000    alpha=.599
+        int t_0 = 1000;
+        int c_max = 2000000;
+        double alpha = .995d;
 
-    int t = t_0;
-    int c = 0;
-    int[] x = generateRandomStartSolution(n);
-    int currW = 0;
-    int[] bestX = Arrays.copyOf(x, n);
+        int t = t_0;
+        int c = 0;
+        int[] x = new int[n];
+        int currW = 0;
+        int[] bestX = Arrays.copyOf(x, n);
 
-    while (c <= c_max) {
-      Random random = new Random();
-      int j = random.nextInt(n - 1);
+        while (c <= c_max) {
+            Random random = new Random();
+            int j = random.nextInt(n - 1);
 
-      int[] y = Arrays.copyOf(x, n);
-      y[j] = 1 - x[j];
+            int[] y = Arrays.copyOf(x, n);
+            y[j] = 1 - x[j];
 
-      if (!((y[j] == 1) && (currW + instance.getWeight(j) > instance.getCapacity()))) {
-        if (y[j] == 1) {
-          x = Arrays.copyOf(y, n);
-          currW += instance.getWeight(j);
+            if (!((y[j] == 1) && (currW + instance.getWeight(j) > instance.getCapacity()))) {
+                if (y[j] == 1) {
 
-          Solution tmpSol = arrayToSolution(x, instance);
-          Solution bestSol = arrayToSolution(bestX, instance);
-          if (tmpSol.getValue().intValue() > bestSol.getValue().intValue()) {
-            bestX = Arrays.copyOf(x, n);
-          } else {
-            double r = random.nextDouble();
+                    x = Arrays.copyOf(y, n);
+                    currW += instance.getWeight(j);
 
-            if (r < Math.exp(-instance.getValue(j)) / (double)t) {
-              x = Arrays.copyOf(y, n);
-              currW -= instance.getWeight(j);
+                    Solution tmpSol = arrayToSolution(x, instance);
+                    Solution bestSol = arrayToSolution(bestX, instance);
+                    if (tmpSol.getValue().intValue() > bestSol.getValue().intValue()) {
+                        bestX = Arrays.copyOf(x, n);
+                    }
+
+                } else {
+                    double r = random.nextDouble();
+
+                    if (r < Math.exp(-instance.getValue(j)) / (double) t) {
+                        x = Arrays.copyOf(y, n);
+                        currW -= instance.getWeight(j);
+                    }
+                }
             }
-          }
+
+            c++;
+            t *= alpha;
         }
-      }
 
-      c++;
-      t *= alpha;
+        Solution optimal = arrayToSolution(bestX, instance);
+        return optimal;
     }
 
-    Solution optimal = arrayToSolution(bestX, instance);
+    private static int[] generateRandomStartSolution(int n) {
+        int[] x = new int[n];
+        Random random = new Random();
 
-    System.out.println("$" + optimal.getValue() + "$");
+        for (int i = 0; i < n; i++) {
+            x[i] = random.nextInt(1);
+        }
 
-    return optimal;
-  }
-
-  private static int[] generateRandomStartSolution(int n) {
-    int[] x = new int[n];
-    Random random = new Random();
-
-    for (int i = 0; i < n; i++) {
-      x[i] = random.nextInt(1);
+        return x;
     }
 
-    return x;
-  }
+    private static Solution arrayToSolution(int[] x, Instance instance) {
+        Solution solution = new Solution(instance);
 
-  private static Solution arrayToSolution(int[] x, Instance instance) {
-    Solution solution = new Solution(instance);
+        for (int i = 0; i < x.length; i++) {
+            solution.set(i, x[i]);
+        }
 
-    for (int i = 0; i < x.length; i++) {
-      solution.set(i, x[i]);
+        return solution;
     }
 
-    return solution;
-  }
-
-  @Override
-  public String getName() {
-    return "SA(s)";
-  }
+    @Override
+    public String getName() {
+        return "SA(s)";
+    }
 }
