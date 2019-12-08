@@ -23,11 +23,12 @@ public class SimulatedAnnealing implements SolverInterface<Solution> {
      * depending on various parameters like start
      * temperature, temperature decreasing rate,
      * max loop counter and starting solution
+     *
      * @param instance instance to solve
-     * @param start starting solution i.e. random
-     * @param t_0 starting temperature
-     * @param c_max max loop count
-     * @param alpha temperature decreasing coefficient
+     * @param start    starting solution i.e. random
+     * @param t_0      starting temperature
+     * @param c_max    max loop count
+     * @param alpha    temperature decreasing coefficient
      * @return solution
      */
     public Solution solve(Instance instance, int[] start, int t_0, int c_max, double alpha) {
@@ -89,11 +90,17 @@ public class SimulatedAnnealing implements SolverInterface<Solution> {
 
     @Override
     public Solution solve(Instance instance) {
+        if (true) {
+            throw new UnsupportedOperationException();
+        }
+
         int t_0 = 1000;
 
         int c_max = 1000000;
         double alpha = .95d;
-        int[] start = generateRandomStartSolution(instance.getSize());
+
+        int[] start = generateRandomStartSolution(instance.getSize(), instance);
+
         Solution best = new Solution(instance);
         String statistics = "";
 
@@ -132,10 +139,11 @@ public class SimulatedAnnealing implements SolverInterface<Solution> {
     /**
      * append statistics about parameters and
      * corresponding values to a string
-     * @param s string
-     * @param t_0 start temperature
-     * @param c_max max count
-     * @param alpha alpha coefficient for temperature fall
+     *
+     * @param s        string
+     * @param t_0      start temperature
+     * @param c_max    max count
+     * @param alpha    alpha coefficient for temperature fall
      * @param solution current solution
      * @return extended string
      */
@@ -153,23 +161,27 @@ public class SimulatedAnnealing implements SolverInterface<Solution> {
 
     /**
      * generate a random start solution
+     *
      * @param n array size
      * @return start solution array
      */
-    private static int[] generateRandomStartSolution(int n) {
+    private static int[] generateRandomStartSolution(int n, Instance instance) {
         int[] x = new int[n];
         Random random = new Random();
 
-        for (int i = 0; i < n; i++) {
-            x[i] = random.nextInt(1);
-        }
+        do {
+            for (int i = 0; i < n; i++) {
+                x[i] = random.nextInt(2);
+            }
+        } while (!arrayToSolution(x, instance).isFeasible());
 
         return x;
     }
 
     /**
      * copy an array to a solution object
-     * @param x array to copy
+     *
+     * @param x        array to copy
      * @param instance related instance to array
      * @return solution
      */

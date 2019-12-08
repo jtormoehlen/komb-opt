@@ -142,14 +142,20 @@ public class ResultsTest {
         }
 
         if (instance.getSize() <= 40) {
-          //runSolver(new BranchAndBound(), instance, valueMatrix);
+          runSolver(new BranchAndBound(), instance, valueMatrix);
+          runSolver(new TabuSearch(), instance, valueMatrix);
+        }
+
+        if (instance.getSize() <= 50) {
+
         }
 
         if (instance.getSize() <= 100) {
           //runSolver(new FractionalSolver(), instance, valueMatrix);
           //runSolver(new GreedyHeuristic(), instance, valueMatrix);
-          runSolver(new BranchAndBound(), instance, valueMatrix);
-          runSolver(new SimulatedAnnealing(), instance, valueMatrix);
+          //runSolver(new BranchAndBound(), instance, valueMatrix);
+          //runSolver(new SimulatedAnnealing(), instance, valueMatrix);
+          //runSolver(new TabuSearch(), instance, valueMatrix);
         }
       }
     }
