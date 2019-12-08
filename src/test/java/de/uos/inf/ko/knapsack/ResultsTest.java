@@ -142,12 +142,13 @@ public class ResultsTest {
         }
 
         if (instance.getSize() <= 40) {
-          runSolver(new BranchAndBound(), instance, valueMatrix);
-          runSolver(new TabuSearch(), instance, valueMatrix);
+          //runSolver(new BranchAndBound(), instance, valueMatrix);
+          //runSolver(new TabuSearch(), instance, valueMatrix);
         }
 
         if (instance.getSize() <= 50) {
-
+          runSolver(new BranchAndBound(), instance, valueMatrix);
+          runSolver(new TabuSearch(), instance, valueMatrix);
         }
 
         if (instance.getSize() <= 100) {
