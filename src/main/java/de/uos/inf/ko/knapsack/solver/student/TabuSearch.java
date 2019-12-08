@@ -12,24 +12,47 @@ import java.util.Random;
 /**
  * Solver for the binary knapsack problem based on tabu search.
  *
- * @author
+ * @author jtormoehlen
  */
 public class TabuSearch implements SolverInterface<Solution> {
 
-    @Override
-    public Solution solve(Instance instance) {
+    /**
+     * solves the knapsack problem based on tabuSearch with
+     * given stopCriterion (time or steps) and attribute
+     * (i.e. best or first fit);
+     * solution is found by constantly add the next most
+     * profitable item to the knapsack when possible (add that item
+     * to tabuList after) or remove the least profitable item from
+     * knapsack when possible (and add that item to tabuList after);
+     * in each iteration update the tabuList based on a cooldown
+     * parameter (i.e. number of iterations) that determines the
+     * duration the item remains in tabuList
+     * @param instance knapsack instance
+     * @param stopCriterion time or steps
+     * @param bestFit best or first fit
+     * @return solution
+     */
+    public Solution solve(Instance instance, int stopCriterion, boolean bestFit) {
         if (false) {
             throw new UnsupportedOperationException();
         }
 
-        int count = 10000;
         int duration = 3;
         int[] s = generateRandomStartSolution(instance.getSize(), instance);
         int[] sStar = Arrays.copyOf(s, s.length);
         int cStar = new Solution(arrayToSolution(s, instance)).getValue();
         List<Item> tabuList = new ArrayList<>();
 
-        while (count > 0) {
+        long c0, cMax;
+        if (stopCriterion == 0) {
+            c0 = System.currentTimeMillis();
+            cMax = c0 + 2000;
+        } else {
+            c0 = 0;
+            cMax = 10000;
+        }
+
+        while (c0 <= cMax) {
             int added = add(s, tabuList, instance);
             int cleared = clear(s, tabuList, instance);
 
@@ -48,15 +71,26 @@ public class TabuSearch implements SolverInterface<Solution> {
             }
 
             updateList(tabuList);
-            count--;
-        }
 
-//        printSolution(s);
-//        System.out.println(add(s, tabuList, instance) + " add");
-//        System.out.println(clear(s, tabuList, instance) + " clear");
+            if (stopCriterion == 0) {
+                c0 = System.currentTimeMillis();
+            } else {
+                c0++;
+            }
+        }
 
         Solution solution = new Solution(arrayToSolution(sStar, instance));
         return solution;
+    }
+
+    /**
+     *
+     * @param instance The given knapsack instance
+     * @return solution
+     */
+    @Override
+    public Solution solve(Instance instance) {
+        return solve(instance, 0, true);
     }
 
     @Override
@@ -64,6 +98,14 @@ public class TabuSearch implements SolverInterface<Solution> {
         return "Tabu(s)";
     }
 
+    /**
+     * search the most valuable of all unselected items
+     * that are not tabu and return it
+     * @param x solution vector
+     * @param tabuList TabuList
+     * @param instance Instance
+     * @return result
+     */
     private static int add(int[] x, List<Item> tabuList, Instance instance) {
         int bestItem = -1;
         int bestValue = 0;
@@ -95,10 +137,17 @@ public class TabuSearch implements SolverInterface<Solution> {
         return bestItem;
     }
 
+    /**
+     * search the least valuable of all selected items
+     * that are not tabu and return it
+     * @param x solution vector
+     * @param tabuList TabuList
+     * @param instance Instance
+     * @return result
+     */
     private static int clear(int[] x, List<Item> tabuList, Instance instance) {
         int worstItem = -1;
         int worstValue = Integer.MAX_VALUE;
-        int worstWeight = 0;
 
         for (int i = 0; i < x.length; i++) {
             if (x[i] == 1) {
@@ -106,10 +155,9 @@ public class TabuSearch implements SolverInterface<Solution> {
 
                     for (int j = 0; j < x.length; j++) {
                         if (x[j] == 1) {
-                            if (instance.getValue(j) <= worstValue) { // && instance.getWeight(j) >= worstWeight
+                            if (instance.getValue(j) <= worstValue) {
                                 worstItem = j;
                                 worstValue = instance.getValue(j);
-                                worstWeight = instance.getWeight(j);
                             }
                         }
                     }
@@ -120,6 +168,13 @@ public class TabuSearch implements SolverInterface<Solution> {
         return worstItem;
     }
 
+    /**
+     * updates the TabuList:
+     * delete items with duration zero and
+     * reduce duration of all items by one
+     * @param tabuList
+     * @return
+     */
     private static List<Item> updateList(List<Item> tabuList) {
         List<Item> result = tabuList;
 
@@ -134,9 +189,15 @@ public class TabuSearch implements SolverInterface<Solution> {
         return result;
     }
 
+    /**
+     * returns if the tabuList contains an item
+     * @param tabuList TabuList
+     * @param item Item
+     * @return result as boolean
+     */
     private static boolean isTabu(List<Item> tabuList, int item) {
         for (Item iterator : tabuList) {
-            if (iterator.indentity == item) {
+            if (iterator.identity == item) {
                 return true;
             }
         }
@@ -144,7 +205,10 @@ public class TabuSearch implements SolverInterface<Solution> {
         return false;
     }
 
-
+    /**
+     * prints solution vector x to console
+     * @param x solution vector
+     */
     private static void printSolution(int[] x) {
         String s = "";
 
@@ -167,7 +231,7 @@ public class TabuSearch implements SolverInterface<Solution> {
 
         do {
             for (int i = 0; i < n; i++) {
-                x[i] = random.nextInt(2);
+                x[i] = random.nextInt(1);
             }
         } while (!arrayToSolution(x, instance).isFeasible());
 
@@ -191,12 +255,15 @@ public class TabuSearch implements SolverInterface<Solution> {
         return solution;
     }
 
+    /**
+     * Item Object with Identity and duration
+     */
     private class Item {
-        int indentity;
+        int identity;
         int duration;
 
-        public Item(int indentity, int duration) {
-            this.indentity = indentity;
+        public Item(int identity, int duration) {
+            this.identity = identity;
             this.duration = duration;
         }
     }
