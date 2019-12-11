@@ -17,80 +17,21 @@ import java.util.Random;
 public class TabuSearch implements SolverInterface<Solution> {
 
     /**
-     * solves the knapsack problem based on tabuSearch with
-     * given stopCriterion (time or steps) and attribute
-     * (i.e. best or first fit);
-     * solution is found by constantly add the next most
-     * profitable item to the knapsack when possible (add that item
-     * to tabuList after) or remove the least profitable item from
-     * knapsack when possible (and add that item to tabuList after);
-     * in each iteration update the tabuList based on a cooldown
-     * parameter (i.e. number of iterations) that determines the
-     * duration the item remains in tabuList
-     * @param instance knapsack instance
-     * @param stopCriterion time or steps
-     * @param bestFit best or first fit
-     * @return solution
-     */
-    public Solution solve(Instance instance, int stopCriterion, boolean bestFit) {
-        if (false) {
-            throw new UnsupportedOperationException();
-        }
-
-        int duration = 3;
-        int[] s = generateRandomStartSolution(instance.getSize(), instance);
-        int[] sStar = Arrays.copyOf(s, s.length);
-        int cStar = new Solution(arrayToSolution(s, instance)).getValue();
-        List<Item> tabuList = new ArrayList<>();
-
-        long c0, cMax;
-        if (stopCriterion == 0) {
-            c0 = System.currentTimeMillis();
-            cMax = c0 + 2000;
-        } else {
-            c0 = 0;
-            cMax = 10000;
-        }
-
-        while (c0 <= cMax) {
-            int added = add(s, tabuList, instance);
-            int cleared = clear(s, tabuList, instance);
-
-            if (added > -1) {
-                s[added] = 1;
-                tabuList.add(new Item(added, duration));
-            } else if (cleared > -1) {
-                s[cleared] = 0;
-                tabuList.add(new Item(cleared, duration));
-            }
-
-            int cTmp = new Solution(arrayToSolution(s, instance)).getValue();
-            if (cTmp >= cStar) {
-                sStar = Arrays.copyOf(s, s.length);
-                cStar = cTmp;
-            }
-
-            updateList(tabuList);
-
-            if (stopCriterion == 0) {
-                c0 = System.currentTimeMillis();
-            } else {
-                c0++;
-            }
-        }
-
-        Solution solution = new Solution(arrayToSolution(sStar, instance));
-        return solution;
-    }
-
-    /**
-     *
      * @param instance The given knapsack instance
      * @return solution
      */
     @Override
     public Solution solve(Instance instance) {
-        return solve(instance, 0, true);
+        long t_0 = System.currentTimeMillis();
+        Solution timeSolution = solve(instance, 1, false);
+        long t_1 = System.currentTimeMillis();
+        Solution iterationSolution = solve(instance, 0, true);
+        long t_2 = System.currentTimeMillis();
+
+        printStatistics(timeSolution, t_1 - t_0, "feasible allowed");
+        printStatistics(iterationSolution, t_2 - t_1, "infeasible allowed");
+
+        return timeSolution.getValue() >= iterationSolution.getValue() ? timeSolution : iterationSolution;
     }
 
     @Override
@@ -99,37 +40,108 @@ public class TabuSearch implements SolverInterface<Solution> {
     }
 
     /**
+     * solves the knapsack problem based on TabuSearch with
+     * given stopCriterion (specific runtime or iterations) and attribute
+     * (i.e. save whole solution x, save best/worst items,
+     * allow infeasible solutions);
+     * solution is found by constantly add the next most
+     * profitable item to the knapsack when possible (add that item
+     * to TabuList after) or remove the least profitable item from
+     * knapsack when possible (and add that item to tabuList after);
+     * in each iteration update the TabuList based on a cooldown
+     * parameter (i.e. number of iterations) that determines the
+     * duration the item remains in TabuList
+     *
+     * @param instance      knapsack instance
+     * @param stopCriterion runtime or iterations {0,1}
+     * @param all           dont deny feasible solutions
+     * @return solution
+     */
+    private Solution solve(Instance instance, int stopCriterion, boolean all) {
+        if (false) {
+            throw new UnsupportedOperationException();
+        }
+
+        int[] s = generateRandomStartSolution(instance.getSize(), instance);
+        int[] sStar = Arrays.copyOf(s, s.length);
+        int cStar = new Solution(arrayToSolution(s, instance)).getValue();
+        List<Item> tabuList = new ArrayList<>();
+
+        /** parameters: cooldown, time interval in ms, maximal iterations **/
+        int duration = 5;
+        long timeInterval = 1000;
+        long maxIterations = 100000;
+
+        /** TabuSearch stop criterion: time or iterations **/
+        long c0, cMax;
+        if (stopCriterion == 0) {
+            c0 = System.currentTimeMillis();
+            cMax = c0 + timeInterval;
+        } else {
+            c0 = 0;
+            cMax = maxIterations;
+        }
+
+        /** main loop **/
+        while (c0 <= cMax) {
+            int added = add(s, tabuList, instance, all);
+            int cleared = clear(s, tabuList, instance);
+
+            /** try to add/clear most/least valuable item **/
+            if (added > -1) {
+                s[added] = 1;
+                tabuList.add(new Item(added, duration));
+            } else if (cleared > -1) {
+                s[cleared] = 0;
+                tabuList.add(new Item(cleared, duration));
+            }
+
+            /** update TabuList **/
+            updateList(tabuList);
+
+            /** update best solution **/
+            Solution sTmp = new Solution(arrayToSolution(s, instance));
+            if ((sTmp.getValue() >= cStar) && sTmp.isFeasible()) {
+                sStar = Arrays.copyOf(s, s.length);
+                cStar = sTmp.getValue();
+            }
+
+            if (stopCriterion == 0) {
+                c0 = System.currentTimeMillis();
+            } else {
+                c0++;
+            }
+        }
+
+        /** return result **/
+        Solution solution = new Solution(arrayToSolution(sStar, instance));
+        return solution;
+    }
+
+    /**
      * search the most valuable of all unselected items
      * that are not tabu and return it
-     * @param x solution vector
+     *
+     * @param x        solution vector
      * @param tabuList TabuList
      * @param instance Instance
      * @return result
      */
-    private static int add(int[] x, List<Item> tabuList, Instance instance) {
+    private static int add(int[] x, List<Item> tabuList, Instance instance, boolean all) {
         int bestItem = -1;
         int bestValue = 0;
+        int bestWeight = instance.getCapacity() - new Solution(arrayToSolution(x, instance)).getWeight();
 
         for (int i = 0; i < x.length; i++) {
-            if (x[i] == 0) {
-                if (!isTabu(tabuList, i)) {
-                    int w = 0;
-                    int c = 0;
-
-                    for (int j = 0; j < x.length; j++) {
-                        if (x[j] == 1) {
-                            w += instance.getWeight(j);
-                            c += instance.getValue(j);
-                        }
-                    }
-
-                    w += instance.getWeight(i);
-                    c += instance.getValue(i);
-
-                    if (w <= instance.getCapacity() && c >= bestValue) {
-                        bestItem = i;
-                        bestValue = c;
-                    }
+            if ((x[i] == 0) && (!isTabu(tabuList, i))) {
+                if ((instance.getValue(i) > bestValue) && (instance.getWeight(i) <= bestWeight || all)) {
+                    bestItem = i;
+                    bestValue = instance.getValue(i);
+                    bestWeight = instance.getWeight(i);
+                } else if ((instance.getValue(i) == bestValue) && (instance.getWeight(i) < bestWeight || all)) {
+                    bestItem = i;
+                    bestValue = instance.getValue(i);
+                    bestWeight = instance.getWeight(i);
                 }
             }
         }
@@ -140,7 +152,8 @@ public class TabuSearch implements SolverInterface<Solution> {
     /**
      * search the least valuable of all selected items
      * that are not tabu and return it
-     * @param x solution vector
+     *
+     * @param x        solution vector
      * @param tabuList TabuList
      * @param instance Instance
      * @return result
@@ -148,19 +161,18 @@ public class TabuSearch implements SolverInterface<Solution> {
     private static int clear(int[] x, List<Item> tabuList, Instance instance) {
         int worstItem = -1;
         int worstValue = Integer.MAX_VALUE;
+        int worstWeight = 0;
 
         for (int i = 0; i < x.length; i++) {
-            if (x[i] == 1) {
-                if (!isTabu(tabuList, i)) {
-
-                    for (int j = 0; j < x.length; j++) {
-                        if (x[j] == 1) {
-                            if (instance.getValue(j) <= worstValue) {
-                                worstItem = j;
-                                worstValue = instance.getValue(j);
-                            }
-                        }
-                    }
+            if ((x[i] == 1) && (!isTabu(tabuList, i))) {
+                if (instance.getValue(i) < worstValue) {
+                    worstItem = i;
+                    worstValue = instance.getValue(i);
+                    worstWeight = instance.getWeight(i);
+                } else if ((instance.getValue(i) == worstValue) && (instance.getWeight(i) > worstWeight)) {
+                    worstItem = i;
+                    worstValue = instance.getValue(i);
+                    worstWeight = instance.getWeight(i);
                 }
             }
         }
@@ -172,6 +184,7 @@ public class TabuSearch implements SolverInterface<Solution> {
      * updates the TabuList:
      * delete items with duration zero and
      * reduce duration of all items by one
+     *
      * @param tabuList
      * @return
      */
@@ -191,8 +204,9 @@ public class TabuSearch implements SolverInterface<Solution> {
 
     /**
      * returns if the tabuList contains an item
+     *
      * @param tabuList TabuList
-     * @param item Item
+     * @param item     Item
      * @return result as boolean
      */
     private static boolean isTabu(List<Item> tabuList, int item) {
@@ -205,33 +219,34 @@ public class TabuSearch implements SolverInterface<Solution> {
         return false;
     }
 
-    /**
-     * prints solution vector x to console
-     * @param x solution vector
-     */
-    private static void printSolution(int[] x) {
+    private static void printStatistics(Solution solution, long time, String description) {
         String s = "";
 
-        for (int i = 0; i < x.length; i++) {
-            s += x[i] + "$";
-        }
+        s += "TabuSearch knapsack: " + solution.getInstance().getSize() + "\n";
+        s += description + "\n";
+        s += "tot_value\tdelta_time\n";
+        s += solution.getValue() + "\t\t" + time + "ms\n";
 
         System.out.println(s);
     }
 
     /**
      * generate a random start solution
+     * bound elem {1,2}: 1 for zeros and
+     * 2 for random elements between zero and one
+     * attention: may result in high computing time!
      *
      * @param n array size
      * @return start solution array
      */
     private static int[] generateRandomStartSolution(int n, Instance instance) {
+        int bound = 1;
         int[] x = new int[n];
         Random random = new Random();
 
         do {
             for (int i = 0; i < n; i++) {
-                x[i] = random.nextInt(1);
+                x[i] = random.nextInt(bound);
             }
         } while (!arrayToSolution(x, instance).isFeasible());
 
@@ -256,7 +271,9 @@ public class TabuSearch implements SolverInterface<Solution> {
     }
 
     /**
-     * Item Object with Identity and duration
+     * Item Object with Identity: i elem {0,...,n-1}
+     * and duration (number of iterations
+     * item remains in TabuList)
      */
     private class Item {
         int identity;

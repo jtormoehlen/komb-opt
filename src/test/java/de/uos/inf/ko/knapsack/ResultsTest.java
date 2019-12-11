@@ -142,27 +142,13 @@ public class ResultsTest {
                     //runSolver(new ConstraintProgrammingDirect(), instance, valueMatrix);
                 }
 
-                if (instance.getSize() <= 40) {
-                    //runSolver(new BranchAndBound(), instance, valueMatrix);
-                    //runSolver(new TabuSearch(), instance, valueMatrix);
-                }
-
                 if (instance.getSize() <= 50) {
-                    //runSolver(new BranchAndBound(), instance, valueMatrix);
-                    //runSolver(new TabuSearch(), instance, valueMatrix);
-                }
 
-                if (instance.getSize() <= 60) {
-                    runSolver(new BranchAndBound(), instance, valueMatrix);
-                    runSolver(new TabuSearch(), instance, valueMatrix);
                 }
 
                 if (instance.getSize() <= 100) {
-                    //runSolver(new FractionalSolver(), instance, valueMatrix);
-                    //runSolver(new GreedyHeuristic(), instance, valueMatrix);
-                    //runSolver(new BranchAndBound(), instance, valueMatrix);
-                    //runSolver(new SimulatedAnnealing(), instance, valueMatrix);
-                    //runSolver(new TabuSearch(), instance, valueMatrix);
+                    runSolver(new BranchAndBound(), instance, valueMatrix);
+                    runSolver(new TabuSearch(), instance, valueMatrix);
                 }
             }
         }
