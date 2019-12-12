@@ -22,6 +22,10 @@ public class TabuSearch implements SolverInterface<Solution> {
      */
     @Override
     public Solution solve(Instance instance) {
+        if (true) {
+            throw new UnsupportedOperationException();
+        }
+
         long t_0 = System.currentTimeMillis();
         Solution timeSolution = solve(instance, 1, false);
         long t_1 = System.currentTimeMillis();

@@ -148,7 +148,9 @@ public class ResultsTest {
 
                 if (instance.getSize() <= 100) {
                     runSolver(new BranchAndBound(), instance, valueMatrix);
-                    runSolver(new TabuSearch(), instance, valueMatrix);
+                    //runSolver(new TabuSearch(), instance, valueMatrix);
+                    //runSolver(new ConstraintProgramming(), instance, valueMatrix);
+                    runSolver(new GeneticAlgorithm(), instance, valueMatrix);
                 }
             }
         }
