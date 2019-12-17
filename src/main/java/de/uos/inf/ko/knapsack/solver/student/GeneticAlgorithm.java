@@ -14,6 +14,56 @@ import java.util.*;
 public class GeneticAlgorithm implements SolverInterface<Solution> {
 
     /**
+     * solve knapsack problem using genetic algorithm
+     *
+     * @param instance The given knapsack instance
+     * @return approximated solution
+     */
+    @Override
+    public Solution solve(Instance instance) {
+        List<Solution> solutions = new ArrayList<>();
+        Solution best = new Solution(instance);
+        String statistics = "";
+
+        long maxTime = 100;
+        int startPopSize = 10;
+        float mutProb = 0.25f;
+        Solution solution = solve(instance, maxTime, startPopSize, mutProb);
+        solutions.add(solution);
+        statistics = appendStatistics(statistics, instance.getSize(), maxTime, startPopSize, mutProb, solution.getValue());
+
+        startPopSize = 100;
+        solution = solve(instance, maxTime, startPopSize, mutProb);
+        solutions.add(solution);
+        statistics = appendStatistics(statistics, instance.getSize(), maxTime, startPopSize, mutProb, solution.getValue());
+
+        mutProb = 0.75f;
+        solution = solve(instance, maxTime, startPopSize, mutProb);
+        solutions.add(solution);
+        statistics = appendStatistics(statistics, instance.getSize(), maxTime, startPopSize, mutProb, solution.getValue());
+
+        maxTime = 1000;
+        solution = solve(instance, maxTime, startPopSize, mutProb);
+        solutions.add(solution);
+        statistics = appendStatistics(statistics, instance.getSize(), maxTime, startPopSize, mutProb, solution.getValue());
+
+        for (Solution sol : solutions) {
+            if (sol.getValue() > best.getValue()) {
+                best = new Solution(sol);
+            }
+        }
+
+        System.out.println(statistics);
+
+        return best;
+    }
+
+    @Override
+    public String getName() {
+        return "GA(s)";
+    }
+
+    /**
      * solve knapsack problem using genetic algorithm:
      * creating a starting population and generate new
      * individuals by choosing two random parent
@@ -22,15 +72,13 @@ public class GeneticAlgorithm implements SolverInterface<Solution> {
      * regularly reduce the population by natural
      * selection; repeat until time limit is reached
      *
-     * @param instance The given knapsack instance
+     * @param instance given knapsack instance
+     * @param maxTime main loop maximum time limit in ms
+     * @param startPopSize starting population size
+     * @param mutProb mutation probability {0.0,...,1.0}
      * @return approximated solution
      */
-    @Override
-    public Solution solve(Instance instance) {
-        if (false) {
-            throw new UnsupportedOperationException();
-        }
-
+    public Solution solve(Instance instance, long maxTime, int startPopSize, float mutProb) {
         /** best solution **/
         Solution sStar = new Solution(instance);
 
@@ -42,21 +90,17 @@ public class GeneticAlgorithm implements SolverInterface<Solution> {
         final int w = tmp.getWeight();
 
         /** initial population and compute fitness of each individual **/
-        final int popStartSize = 100;
-        Set<String> populationSet = generateInitialPopulation(instance, popStartSize);
+        Set<String> populationSet = generateInitialPopulation(instance, startPopSize);
         Map<String, Integer> fitnessMap = new HashMap<>();
         for (String individual : populationSet) {
             Solution individualSolution = stringToSolution(individual, instance);
             fitnessMap.put(individual, computeFitness(individualSolution, w));
         }
-        final int popSizeMax = 1000;
-
-        /** mutation probability **/
-        final double probability = 0.75d;
+        final int popSizeMax = 10 * startPopSize;
 
         /** loop until time limit reached **/
         long t0 = System.currentTimeMillis();
-        final long tMax = t0 + 1000;
+        final long tMax = t0 + maxTime;
         while (t0 <= tMax) {
 
             /** get random mother and remove from population **/
@@ -82,7 +126,7 @@ public class GeneticAlgorithm implements SolverInterface<Solution> {
             String sC = onePointCrossover(sM, sF);
 
             /** mutate child with probability 0.0,...,1.0 **/
-            sC = mutate(sC, probability);
+            sC = mutate(sC, mutProb);
 
             /** compute child fitness **/
             fitnessMap.put(sC, computeFitness(stringToSolution(sC, instance), w));
@@ -90,7 +134,7 @@ public class GeneticAlgorithm implements SolverInterface<Solution> {
 
             /** natural selection on population **/
             if (populationSet.size() >= popSizeMax) {
-                populationSet = naturalSelection(populationSet, fitnessMap, popStartSize);
+                populationSet = naturalSelection(populationSet, fitnessMap, startPopSize);
             }
 
             t0 = System.currentTimeMillis();
@@ -281,6 +325,19 @@ public class GeneticAlgorithm implements SolverInterface<Solution> {
         return s;
     }
 
+    private static String appendStatistics(String s, int n, long maxTime, int startPopSize, float mutProb, int value) {
+        String res = "";
+
+        if (s == "") {
+            s += "\nGenetic Algorithm Statistics\n";
+            s += "n\tTime\tPopSize\tMutProb\tTotVal\n";
+        }
+
+        res += s + n + "\t" + maxTime + "ms\t" + startPopSize + "\t" + mutProb + "\t" + value + "\n";
+
+        return res;
+    }
+
     /**
      * individual of the population with solution s
      * and fitness value
@@ -298,10 +355,5 @@ public class GeneticAlgorithm implements SolverInterface<Solution> {
         public int compareTo(Individual individual) {
             return -(this.fitness - individual.fitness);
         }
-    }
-
-    @Override
-    public String getName() {
-        return "GA(s)";
     }
 }
