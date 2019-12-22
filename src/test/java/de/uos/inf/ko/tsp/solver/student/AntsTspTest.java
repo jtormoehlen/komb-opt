@@ -32,7 +32,7 @@ public class AntsTspTest {
   public void testAllInstances() throws IOException {
 
     for (String filename : FILENAMES) {
-      Instance instance = Reader.readInstance("src/test/resources/tsp/" + filename);
+      Instance instance = Reader.readInstance("./resources/tsp/" + filename);
       Ants ants = new Ants();
       final List<Integer> tour = ants.solve(instance);
       assertFeasibility(instance, tour);

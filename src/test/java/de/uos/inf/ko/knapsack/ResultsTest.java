@@ -132,14 +132,15 @@ public class ResultsTest {
                 final String filename = "rucksack" + String.format("%05d", instances[i][FRST_ENTRY]) + "-" + j + ".txt";
                 final Instance instance = Reader.readInstance(KNAPSACK_INSTANCES_PATH + filename);
                 instance.setFilename(filename);
-                System.out.println("# Instance file: " + filename);
-                System.out.println("# Number of items: " + instance.getSize());
-                System.out.println("# Capacity of knapsack: " + instance.getCapacity());
+//                System.out.println("# Instance file: " + filename);
+//                System.out.println("# Number of items: " + instance.getSize());
+//                System.out.println("# Capacity of knapsack: " + instance.getCapacity());
 
                 if (instance.getSize() <= 20) {
                     //runSolver(new Enumeration(), instance, valueMatrix);
                     //runSolver(new ConstraintProgramming(), instance, valueMatrix);
                     //runSolver(new ConstraintProgrammingDirect(), instance, valueMatrix);
+
                 }
 
                 if (instance.getSize() <= 50) {
@@ -147,10 +148,9 @@ public class ResultsTest {
                 }
 
                 if (instance.getSize() <= 100) {
-                    runSolver(new BranchAndBound(), instance, valueMatrix);
+                    //runSolver(new BranchAndBound(), instance, valueMatrix);
                     //runSolver(new TabuSearch(), instance, valueMatrix);
-                    //runSolver(new ConstraintProgramming(), instance, valueMatrix);
-                    runSolver(new GeneticAlgorithm(), instance, valueMatrix);
+                    //runSolver(new GeneticAlgorithm(), instance, valueMatrix);
                 }
             }
         }
@@ -160,6 +160,6 @@ public class ResultsTest {
         for (int i = 0; i < valueMatrix.length; i++) {
             matrix[i] = valueMatrix[i].toArray(new String[0]);
         }
-        printMatrix(matrix, header);
+        //printMatrix(matrix, header);
     }
 }

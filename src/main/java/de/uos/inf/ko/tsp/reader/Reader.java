@@ -62,6 +62,8 @@ public class Reader {
       }
     }
 
+    System.out.println(instance.getNumCities());
+
     return instance;
   }
 }

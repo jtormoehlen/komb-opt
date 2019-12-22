@@ -21,6 +21,10 @@ public class GeneticAlgorithm implements SolverInterface<Solution> {
      */
     @Override
     public Solution solve(Instance instance) {
+        if (true) {
+            throw new UnsupportedOperationException();
+        }
+
         List<Solution> solutions = new ArrayList<>();
         Solution best = new Solution(instance);
         String statistics = "";
