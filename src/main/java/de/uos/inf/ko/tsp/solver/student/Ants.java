@@ -1,6 +1,5 @@
 package de.uos.inf.ko.tsp.solver.student;
 
-import java.text.DecimalFormat;
 import java.util.*;
 
 import de.uos.inf.ko.tsp.Instance;
@@ -18,10 +17,12 @@ public class Ants {
      * @return TSP tour described as a list of cities
      */
     public List<Integer> solve(Instance instance) {
-        final double evaporation = 0.2d;
-        final double alpha = 0.1;
-        final double beta = 0.4;
+        /** initiate parameters: evaporation factor, alpha, beta and number of ants **/
+        final double evaporation = 0.5d;
+        final double alpha = 0.5;
+        final double beta = 1.0;
         final int m = 1000;
+        /** tsp instance size and pheromone "field" (zero at start) **/
         int n = instance.getNumCities();
         double[][] pheromones = new double[n][n];
 
@@ -30,17 +31,21 @@ public class Ants {
         double optimalLength = Double.POSITIVE_INFINITY;
 
         while (loopCount <= 10) {
+            /** initiate all ants **/
             Ant[] ants = new Ant[m];
             List<Double> tourLenghts = new ArrayList<>();
 
             for (int k = 0; k < m; k++) {
+                /** set ant on random start location **/
                 ants[k] = new Ant();
                 Random random = new Random();
                 int start = random.nextInt(n);
 
+                /** generate list of unvisited cities for ant k **/
                 List<Integer> notVisitedV = generateSetV(n, start);
                 ants[k].tour.add(new Integer(start));
 
+                /** for all (random) unvisited cities... **/
                 for (int lambda = 1; lambda < n; lambda++) {
                     double prob = 0;
                     int j = -1;
@@ -55,6 +60,7 @@ public class Ants {
                         }
                     }
 
+                    /** ...visit next city with highest probability for ant k **/
                     if (j != -1) {
                         ants[k].tour.add(new Integer(j));
                         notVisitedV.remove(new Integer(j));
@@ -62,6 +68,8 @@ public class Ants {
                 }
             }
 
+            /** for all ants calculate tourlength and delta values;
+             * update optimal solution if possible **/
             for (int k = 0; k < m; k++) {
                 ants[k].calcTourLength(instance);
                 tourLenghts.add(new Double(ants[k].tourLength));
@@ -74,27 +82,35 @@ public class Ants {
                 ants[k].calcDelta(instance);
             }
 
+            /** calculate new pheromone values **/
             pheromones = calcPheromones(pheromones, evaporation, ants, instance);
             loopCount++;
 
-            System.out.println(Collections.min(tourLenghts) + "$");
+            //System.out.println(Collections.min(tourLenghts) + "$");
         }
 
-        System.out.println(computeCost(instance, optimal) + "!");
+        /** print best result **/
+        if (instance.getNumCities() != 1) {
+            System.out.println("tsp " + instance.getNumCities() + " Tourlength: " + computeCost(instance, optimal));
+        }
 
+        /** return best result **/
         return optimal;
     }
 
     /**
+     * calculate probability for one ant
+     * to choose a path from i to j using
+     * formula (3.1)
      *
-     * @param pheromones
-     * @param instance
-     * @param alpha
-     * @param beta
-     * @param i
-     * @param j
-     * @param notVisitedV
-     * @return
+     * @param pheromones current pheromones on all paths
+     * @param instance tsp instance
+     * @param alpha influence of pheromones
+     * @param beta influence of greedy solution
+     * @param i from city
+     * @param j to city
+     * @param notVisitedV list of unvisited cities
+     * @return probability
      */
     private double calcProbability(double[][] pheromones, Instance instance,
                                    double alpha, double beta, int i, int j, List<Integer> notVisitedV) {
@@ -116,12 +132,13 @@ public class Ants {
     }
 
     /**
+     * overwrite pheromone values for all path between all cities
      *
-     * @param pheromones
-     * @param evaporation
-     * @param ants
-     * @param instance
-     * @return
+     * @param pheromones current pheromones on all paths
+     * @param evaporation pheromones' disappearing factor
+     * @param ants array of ants
+     * @param instance tsp instance
+     * @return 2d array of pheromone values (for each path between all cities)
      */
     private double[][] calcPheromones(double[][] pheromones, double evaporation, Ant[] ants, Instance instance) {
         for (int i = 0; i < instance.getNumCities(); i++) {
@@ -140,10 +157,11 @@ public class Ants {
     }
 
     /**
+     * generate list of unvisited cities (excluding start location)
      *
-     * @param size
-     * @param start
-     * @return
+     * @param size tsp instance size
+     * @param start city to start
+     * @return list of unvisited cities
      */
     private List<Integer> generateSetV(int size, int start) {
         List<Integer> setV = new ArrayList<>();
@@ -177,26 +195,7 @@ public class Ants {
     }
 
     /**
-     *
-     * @param array2D
-     */
-    private void print2DArray(double[][] array2D) {
-        String res = "";
-
-        for (int i = 0; i < array2D.length; i++) {
-            for (int j = 0; j < array2D.length; j++) {
-                DecimalFormat decimalFormat = new DecimalFormat("#.####");
-                res += decimalFormat.format(array2D[i][j]) + "|";
-            }
-
-            res += "\n";
-        }
-
-        System.out.println(res);
-    }
-
-    /**
-     *
+     * Ant with tsp tour including length and 2d array of delta values
      */
     private class Ant {
         List<Integer> tour;
@@ -208,24 +207,25 @@ public class Ants {
         }
 
         /**
+         * get last visited city
          *
-         * @return
+         * @return last visited city
          */
         public int getLast() {
             return tour.get(tour.size() - 1).intValue();
         }
 
         /**
-         *
-         * @param instance
+         * calculate the current tour length and store to tourlength
+         * @param instance tsp instance
          */
         public void calcTourLength(Instance instance) {
             tourLength = computeCost(instance, tour);
         }
 
         /**
-         *
-         * @param instance
+         * calculate 2d array of delta values (required for pheromones)
+         * @param instance tsp instance
          */
         public void calcDelta(Instance instance) {
             delta = new double[instance.getNumCities()][instance.getNumCities()];
